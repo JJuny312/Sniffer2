@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>530</width>
-    <height>456</height>
+    <width>1000</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,7 +90,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>530</width>
+     <width>1000</width>
      <height>17</height>
     </rect>
    </property>
@@ -125,6 +125,10 @@
   <action name="actionClear">
    <property name="checkable">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="src.qrc">
+     <normaloff>:/src/delete.png</normaloff>:/src/delete.png</iconset>
    </property>
    <property name="text">
     <string>Clear</string>

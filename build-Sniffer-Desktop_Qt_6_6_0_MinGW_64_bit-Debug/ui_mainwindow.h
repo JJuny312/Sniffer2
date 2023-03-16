@@ -55,7 +55,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(530, 456);
+        MainWindow->resize(1000, 600);
         actionRun_And_Stop = new QAction(MainWindow);
         actionRun_And_Stop->setObjectName("actionRun_And_Stop");
         QIcon icon;
@@ -64,6 +64,9 @@ public:
         actionClear = new QAction(MainWindow);
         actionClear->setObjectName("actionClear");
         actionClear->setCheckable(false);
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/src/delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionClear->setIcon(icon1);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout = new QVBoxLayout(centralwidget);
@@ -121,7 +124,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 530, 17));
+        menubar->setGeometry(QRect(0, 0, 1000, 17));
         menuproject = new QMenu(menubar);
         menuproject->setObjectName("menuproject");
         menuRun = new QMenu(menubar);

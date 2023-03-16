@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QString"
+#include "multhread.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -8,17 +9,34 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ShowNetworkCard();
+    multhread *thread = new multhread;
     static bool index = false;
     connect(ui->actionRun_And_Stop, &QAction::triggered, this, [=](){
         index = !index;
         if(index){
             // 开始
-            Capture();
+            int res = Capture();
+            if(res != -1 && pointer){
+                thread->setPointer(pointer);
+                thread->setFlag();
+                thread->start();
+                ui->actionRun_And_Stop->setIcon(QIcon(":/src/pause.png"));
+                ui->comboBox->setEnabled(false);
+            }
         }
         else{
-            //
+            // 结束
+            thread->resetFlag();
+            thread->quit();
+            thread->wait();
+            ui->actionRun_And_Stop->setIcon(QIcon(":/src/start.png"));
+            ui->comboBox->setEnabled(true);
+            pcap_close(pointer);
+            pointer = nullptr;
         }
     });
+
+    connect(thread, &multhread::send, this, &MainWindow::HandleMessage);
 }
 
 MainWindow::~MainWindow()
@@ -76,3 +94,6 @@ int MainWindow::Capture(){
     return 0;
 }
 
+void MainWindow::HandleMessage(DataPackage data){
+    qDebug()<<data.getTimeStamp()<<" "<<data.getInfo();
+}
