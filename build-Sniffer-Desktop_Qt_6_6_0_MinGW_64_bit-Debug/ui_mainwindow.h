@@ -23,6 +23,7 @@
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QToolBar>
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -50,12 +51,13 @@ public:
     QMenu *menuproject;
     QMenu *menuRun;
     QStatusBar *statusbar;
+    QToolBar *toolBar;
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(1000, 600);
+        MainWindow->resize(1400, 600);
         actionRun_And_Stop = new QAction(MainWindow);
         actionRun_And_Stop->setObjectName("actionRun_And_Stop");
         QIcon icon;
@@ -108,12 +110,25 @@ public:
         splitter->setOrientation(Qt::Horizontal);
         tableWidget = new QTableWidget(splitter);
         tableWidget->setObjectName("tableWidget");
+        tableWidget->setEnabled(true);
+        QSizePolicy sizePolicy1(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(tableWidget->sizePolicy().hasHeightForWidth());
+        tableWidget->setSizePolicy(sizePolicy1);
+        tableWidget->setMinimumSize(QSize(800, 0));
         splitter->addWidget(tableWidget);
         treeWidget = new QTreeWidget(splitter);
         QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
         __qtreewidgetitem->setText(0, QString::fromUtf8("1"));
         treeWidget->setHeaderItem(__qtreewidgetitem);
         treeWidget->setObjectName("treeWidget");
+        treeWidget->setEnabled(true);
+        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(treeWidget->sizePolicy().hasHeightForWidth());
+        treeWidget->setSizePolicy(sizePolicy2);
         splitter->addWidget(treeWidget);
 
         horizontalLayout_2->addWidget(splitter);
@@ -124,7 +139,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 1000, 17));
+        menubar->setGeometry(QRect(0, 0, 1400, 17));
         menuproject = new QMenu(menubar);
         menuproject->setObjectName("menuproject");
         menuRun = new QMenu(menubar);
@@ -134,6 +149,9 @@ public:
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
         MainWindow->setStatusBar(statusbar);
+        toolBar = new QToolBar(MainWindow);
+        toolBar->setObjectName("toolBar");
+        MainWindow->addToolBar(Qt::TopToolBarArea, toolBar);
 
         menubar->addAction(menuproject->menuAction());
         menubar->addAction(menuRun->menuAction());
@@ -152,6 +170,7 @@ public:
         actionClear->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
         menuproject->setTitle(QCoreApplication::translate("MainWindow", "Project", nullptr));
         menuRun->setTitle(QCoreApplication::translate("MainWindow", "Run", nullptr));
+        toolBar->setWindowTitle(QCoreApplication::translate("MainWindow", "toolBar", nullptr));
     } // retranslateUi
 
 };

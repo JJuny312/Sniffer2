@@ -42,20 +42,26 @@ static constexpr auto qt_meta_stringdata_CLASSMainWindowENDCLASS = QtMocHelpers:
     "on_comboBox_currentIndexChanged",
     "",
     "index",
+    "on_tableWidget_cellClicked",
+    "row",
+    "column",
     "HandleMessage",
     "DataPackage",
     "data"
 );
 #else  // !QT_MOC_HAS_STRING_DATA
 struct qt_meta_stringdata_CLASSMainWindowENDCLASS_t {
-    uint offsetsAndSizes[14];
+    uint offsetsAndSizes[20];
     char stringdata0[11];
     char stringdata1[32];
     char stringdata2[1];
     char stringdata3[6];
-    char stringdata4[14];
-    char stringdata5[12];
-    char stringdata6[5];
+    char stringdata4[27];
+    char stringdata5[4];
+    char stringdata6[7];
+    char stringdata7[14];
+    char stringdata8[12];
+    char stringdata9[5];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_CLASSMainWindowENDCLASS_t::offsetsAndSizes) + ofs), len 
@@ -65,14 +71,20 @@ Q_CONSTINIT static const qt_meta_stringdata_CLASSMainWindowENDCLASS_t qt_meta_st
         QT_MOC_LITERAL(11, 31),  // "on_comboBox_currentIndexChanged"
         QT_MOC_LITERAL(43, 0),  // ""
         QT_MOC_LITERAL(44, 5),  // "index"
-        QT_MOC_LITERAL(50, 13),  // "HandleMessage"
-        QT_MOC_LITERAL(64, 11),  // "DataPackage"
-        QT_MOC_LITERAL(76, 4)   // "data"
+        QT_MOC_LITERAL(50, 26),  // "on_tableWidget_cellClicked"
+        QT_MOC_LITERAL(77, 3),  // "row"
+        QT_MOC_LITERAL(81, 6),  // "column"
+        QT_MOC_LITERAL(88, 13),  // "HandleMessage"
+        QT_MOC_LITERAL(102, 11),  // "DataPackage"
+        QT_MOC_LITERAL(114, 4)   // "data"
     },
     "MainWindow",
     "on_comboBox_currentIndexChanged",
     "",
     "index",
+    "on_tableWidget_cellClicked",
+    "row",
+    "column",
     "HandleMessage",
     "DataPackage",
     "data"
@@ -87,7 +99,7 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSMainWindowENDCLASS[] = {
       11,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -95,12 +107,14 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSMainWindowENDCLASS[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   26,    2, 0x08,    1 /* Private */,
-       4,    1,   29,    2, 0x0a,    3 /* Public */,
+       1,    1,   32,    2, 0x08,    1 /* Private */,
+       4,    2,   35,    2, 0x08,    3 /* Private */,
+       7,    1,   40,    2, 0x0a,    6 /* Public */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    3,
-    QMetaType::Void, 0x80000000 | 5,    6,
+    QMetaType::Void, QMetaType::Int, QMetaType::Int,    5,    6,
+    QMetaType::Void, 0x80000000 | 8,    9,
 
        0        // eod
 };
@@ -117,6 +131,10 @@ Q_CONSTINIT const QMetaObject MainWindow::staticMetaObject = { {
         // method 'on_comboBox_currentIndexChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        // method 'on_tableWidget_cellClicked'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
         // method 'HandleMessage'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<DataPackage, std::false_type>
@@ -131,7 +149,8 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         (void)_t;
         switch (_id) {
         case 0: _t->on_comboBox_currentIndexChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
-        case 1: _t->HandleMessage((*reinterpret_cast< std::add_pointer_t<DataPackage>>(_a[1]))); break;
+        case 1: _t->on_tableWidget_cellClicked((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[2]))); break;
+        case 2: _t->HandleMessage((*reinterpret_cast< std::add_pointer_t<DataPackage>>(_a[1]))); break;
         default: ;
         }
     }
@@ -156,13 +175,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
