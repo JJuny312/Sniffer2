@@ -43,7 +43,7 @@ public:
     QSpacerItem *horizontalSpacer;
     QLineEdit *lineEdit;
     QWidget *widget_2;
-    QHBoxLayout *horizontalLayout_2;
+    QVBoxLayout *verticalLayout_2;
     QSplitter *splitter;
     QTableWidget *tableWidget;
     QTreeWidget *treeWidget;
@@ -57,7 +57,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(1400, 600);
+        MainWindow->resize(1200, 800);
         actionRun_And_Stop = new QAction(MainWindow);
         actionRun_And_Stop->setObjectName("actionRun_And_Stop");
         QIcon icon;
@@ -103,11 +103,11 @@ public:
 
         widget_2 = new QWidget(centralwidget);
         widget_2->setObjectName("widget_2");
-        horizontalLayout_2 = new QHBoxLayout(widget_2);
-        horizontalLayout_2->setObjectName("horizontalLayout_2");
+        verticalLayout_2 = new QVBoxLayout(widget_2);
+        verticalLayout_2->setObjectName("verticalLayout_2");
         splitter = new QSplitter(widget_2);
         splitter->setObjectName("splitter");
-        splitter->setOrientation(Qt::Horizontal);
+        splitter->setOrientation(Qt::Vertical);
         tableWidget = new QTableWidget(splitter);
         tableWidget->setObjectName("tableWidget");
         tableWidget->setEnabled(true);
@@ -116,7 +116,7 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(tableWidget->sizePolicy().hasHeightForWidth());
         tableWidget->setSizePolicy(sizePolicy1);
-        tableWidget->setMinimumSize(QSize(800, 0));
+        tableWidget->setMinimumSize(QSize(0, 400));
         splitter->addWidget(tableWidget);
         treeWidget = new QTreeWidget(splitter);
         QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
@@ -131,7 +131,7 @@ public:
         treeWidget->setSizePolicy(sizePolicy2);
         splitter->addWidget(treeWidget);
 
-        horizontalLayout_2->addWidget(splitter);
+        verticalLayout_2->addWidget(splitter);
 
 
         verticalLayout->addWidget(widget_2);
@@ -139,7 +139,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 1400, 17));
+        menubar->setGeometry(QRect(0, 0, 1200, 17));
         menuproject = new QMenu(menubar);
         menuproject->setObjectName("menuproject");
         menuRun = new QMenu(menubar);

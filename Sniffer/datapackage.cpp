@@ -105,7 +105,6 @@ QString DataPackage::getSrcMacAddr(){
     }
 }
 
-
 QString DataPackage::getDesIpAddr(){
     IP_HEADER *ip;
     ip = (IP_HEADER*)(pkt_content + 14);

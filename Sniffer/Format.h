@@ -65,5 +65,28 @@ typedef struct icmp_header{ // ICMP
 
 }ICMP_HEADER;
 
+typedef struct dns_header{  // DNS
+    u_short identification;
+    u_short flags;
+    u_short question;
+    u_short answer;
+    u_short authority;
+    u_short additional;
+}DNS_HEADER;
+
+typedef struct dns_question{ // DNS请求
+    // char* name;
+    u_short query_type;
+    u_short query_class;
+}DNS_QUESITON;
+
+typedef struct dns_answer{ // DNS响应
+    // char* name
+    u_short answer_type;
+    u_short answer_class;
+    u_int TTL;
+    u_short dataLength;
+    //char* name
+}DNS_ANSWER;
 
 #endif // FORMAT_H

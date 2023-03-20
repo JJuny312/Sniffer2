@@ -62,7 +62,7 @@ int multhread::ethernetPackageHandle(const u_char *pkt_content, QString &info){
         int res = ipPackageHandle(pkt_content, ipPackage);
         switch(res){
         case 1:{ // icmp
-            info = "ICMP";
+            info = icmpPackageHandle(pkt_content);
             return 2;
         }
         case 6:{ // tcp
@@ -109,7 +109,49 @@ int multhread::tcpPackageHandle(const u_char *pkt_content, QString &info, int ip
         if(src == 443)
             proSend = "(https)";
         else proRecv = "(https)";
+        u_char *ssl;
+        ssl = (u_char*)(pkt_content + 14 + 20 + delta);
+        u_char isTls = (*ssl);
+        u_short *pointer = (u_short*)ssl;
+        u_short version = ntohs(*pointer);
+        if(isTls >= 20 && isTls <= 23 && version >= 0x0301 && version <= 0x0304){
+            type = 6;
+            switch(isTls){
+            case 20:{
+                info = "Change Cipher Spec ";
+                break;
+            }
+            case 21:{
+                info = "Alert ";
+                break;
+            }
+            case 22:{
+                info = "HandShake ";
+                ssl += 4;
+                u_char type = (*ssl);
+                switch(type){
+                case 1:{
+                    info += "Client Hello ";
+                    break;
+                }
+                case 2:{
+                    info += "Server Hello ";
+                    break;
+                }
+                    // ...
+                default:break;
+                }
+            }
+            case 23:{
+                    info = "Application Data ";
+                    break;
+                }
+            default:break;
+            }
+        }else type = 7;
     }
+    if(type == 7)
+        info = "Continuation Data ";
     info += QString::number(src) + proSend + "->" + QString::number(des) + proRecv;
     QString flag = "";
     if(tcp->flags & 0x08) flag += "PSH";
@@ -139,6 +181,7 @@ int multhread::udpPackageHandle(const u_char *pkt_content, QString &info){
     u_short des = ntohs(udp->des_port);
     u_short src = ntohs(udp->src_port);
     if(des == 53 || src == 53){
+        info = dnsPackageHandle(pkt_content);
         return 5;
     }
     else {
@@ -203,3 +246,54 @@ QString multhread::ByteToString(u_char *str, int size){
     return res;
 }
 
+QString multhread::dnsPackageHandle(const u_char *pkt_content){
+    DNS_HEADER *dns;
+    dns = (DNS_HEADER*)(pkt_content + 14 + 20 + 8);
+    u_short identification = ntohs(dns->identification);
+    u_short type = dns->flags;
+    QString info = "";
+    if((type & 0xf800) == 0x0000){
+        info = "Standard query";
+    }else if((type & 0xf800) == 0x8000){
+        info = "Standard query response";
+    }
+    QString name = "";
+    char *domain = (char*)(pkt_content + 14 + 20 + 8 + 12);
+    while(domain != 0x00){
+        if(domain && (*domain) <= 64){
+            int length = *domain;
+            domain++;
+            for(int k = 0; k < length; k++){
+                name += (*domain);
+                domain++;
+            }
+            name += ".";
+        }else break;
+    }
+    if(name != "")
+        name = name.left(name.length() - 1);
+    return info + " 0x" + QString::number(identification, 16) + " " + name;
+}
+
+QString multhread::icmpPackageHandle(const u_char *pkt_content){
+    ICMP_HEADER *icmp;
+    icmp = (ICMP_HEADER*)(pkt_content + 14 + 20);
+    u_char type = icmp->type;
+    u_char code = icmp->code;
+    QString res = "";
+    switch(type){
+    case 0:{
+        if(!code)
+            res = "Echo response(ping)";
+        break;
+    }
+        // ......
+    case 8:{
+        if(!code)
+            res = "Echo request(ping)";
+        break;
+    }
+    default:break;
+    }
+    return res;
+}
