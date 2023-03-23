@@ -56,6 +56,24 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    connect(ui->actionClear, &QAction::triggered,this,[=]{
+            if(!isStart){
+
+                ui->tableWidget->clearContents();
+                ui->tableWidget->setRowCount(0);
+                ui->treeWidget->clear();
+                countNumber = 0;
+                numberRow = -1;
+                int dataSize = this->pData.size();
+                for(int i = 0;i < dataSize;i++){
+                    free((char*)(this->pData[i].pkt_content));
+                    this->pData[i].pkt_content = nullptr;
+                }
+                QVector<DataPackage>().swap(pData);
+
+            }
+        });
+
     connect(thread, &multhread::send, this, &MainWindow::HandleMessage);
     ui->toolBar->setMovable(false);
     ui->tableWidget->setColumnCount(7);
@@ -143,15 +161,17 @@ void MainWindow::HandleMessage(DataPackage data){
     QString type = data.getPackageType();
     QColor color;
     if(type == "TCP")
-        color = QColor(216, 191, 216);
+        color = QColor(0xFF, 0x1F, 0x1F);
     else if(type == "UDP")
-        color = QColor(144, 238, 144);
+        color = QColor(0xFF, 0xA7, 0x0F);
     else if(type == "ARP")
-        color = QColor(238, 238, 0);
+        color = QColor(0xE0, 0xFF, 0x09);
     else if(type == "DNS")
-        color = QColor(255, 255, 224);
+        color = QColor(0x0A, 0xFF, 0x2B);
+    else if(type == "TLS" || type == "SSL")
+        color = QColor(0x10, 0xED, 0xFF);
     else
-        color = QColor(255, 218, 185);
+        color = QColor(0xE8, 0xF7, 0xFF);
 
     ui->tableWidget->setItem(countNumber, 0, new QTableWidgetItem(QString::number(countNumber)));
     ui->tableWidget->setItem(countNumber, 1, new QTableWidgetItem(data.getTimeStamp()));
@@ -187,8 +207,146 @@ void MainWindow::on_tableWidget_cellClicked(int row, int column)
         item->addChild(new QTreeWidgetItem(QStringList() << "Source: " + srcMac));
         item->addChild(new QTreeWidgetItem(QStringList() << "Destinaiton: " + desMac));
         item->addChild(new QTreeWidgetItem(QStringList() << "Type: " + type));
+
+        QString packageType = pData[numberRow].getPackageType();
+        // arp package analysis
+        if(packageType == "ARP"){
+            QString ArpType = pData[numberRow].getArpOperationCode();
+            QTreeWidgetItem*item2 = new QTreeWidgetItem(QStringList()<<"Address Resolution Protocol " + ArpType);
+            ui->treeWidget->addTopLevelItem(item2);
+            QString HardwareType = pData[numberRow].getArpHardwareType();
+            QString protocolType = pData[numberRow].getArpProtocolType();
+            QString HardwareSize = pData[numberRow].getArpHardwareLength();
+            QString protocolSize = pData[numberRow].getArpProtocolLength();
+            QString srcMacAddr = pData[numberRow].getArpSourceEtherAddr();
+            QString desMacAddr = pData[numberRow].getArpDestinationEtherAddr();
+            QString srcIpAddr = pData[numberRow].getArpSourceIpAddr();
+            QString desIpAddr = pData[numberRow].getArpDestinationIpAddr();
+
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Hardware type:" + HardwareType));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Protocol type:" + protocolType));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Hardware size:" + HardwareSize));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Protocol size:" + protocolSize));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Opcode:" + ArpType));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Sender MAC address:" + srcMacAddr));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Sender IP address:" + srcIpAddr));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Target MAC address:" + desMacAddr));
+            item2->addChild(new QTreeWidgetItem(QStringList()<<"Target IP address:" + desIpAddr));
+            return;
+        }else { // ip package analysis
+            QString srcIp = pData[numberRow].getSrcIpAddr();
+            QString desIp = pData[numberRow].getDesIpAddr();
+
+            QTreeWidgetItem*item3 = new QTreeWidgetItem(QStringList()<<"Internet Protocol Version 4, Src:" + srcIp + ", Dst:" + desIp);
+            ui->treeWidget->addTopLevelItem(item3);
+
+            QString version = pData[numberRow].getIpVersion();
+            QString headerLength = pData[numberRow].getIpHeaderLength();
+            QString Tos = pData[numberRow].getIpTos();
+            QString totalLength = pData[numberRow].getIpTotalLength();
+            QString id = "0x" + pData[numberRow].getIpIdentification();
+            QString flags = pData[numberRow].getIpFlag();
+            if(flags.size()<2)
+                flags = "0" + flags;
+            flags = "0x" + flags;
+            QString FragmentOffset = pData[numberRow].getIpFragmentOffset();
+            QString ttl = pData[numberRow].getIpTTL();
+            QString protocol = pData[numberRow].getIpProtocol();
+            QString checksum = "0x" + pData[numberRow].getIpCheckSum();
+            int pDataLengthofIp = totalLength.toUtf8().toInt() - 20;
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"0100 .... = Version:" + version));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<".... 0101 = Header Length:" + headerLength));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"TOS:" + Tos));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Total Length:" + totalLength));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Identification:" + id));
+
+            QString reservedBit = pData[numberRow].getIpReservedBit();
+            QString DF = pData[numberRow].getIpDF();
+            QString MF = pData[numberRow].getIpMF();
+            QString FLAG = ",";
+
+            if(reservedBit == "1"){
+                FLAG += "Reserved bit";
+            }
+            else if(DF == "1"){
+                FLAG += "Don't fragment";
+            }
+            else if(MF == "1"){
+                FLAG += "More fragment";
+            }
+            if(FLAG.size() == 1)
+                FLAG = "";
+            QTreeWidgetItem*bitTree = new QTreeWidgetItem(QStringList()<<"Flags:" + flags + FLAG);
+            item3->addChild(bitTree);
+            QString temp = reservedBit == "1"?"Set":"Not set";
+            bitTree->addChild(new QTreeWidgetItem(QStringList()<<reservedBit + "... .... = Reserved bit:" + temp));
+            temp = DF == "1"?"Set":"Not set";
+            bitTree->addChild(new QTreeWidgetItem(QStringList()<<"." + DF + ".. .... = Don't fragment:" + temp));
+            temp = MF == "1"?"Set":"Not set";
+            bitTree->addChild(new QTreeWidgetItem(QStringList()<<".." + MF + ". .... = More fragment:" + temp));
+
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Fragment Offset:" + FragmentOffset));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Time to Live:" + ttl));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Protocol:" + protocol));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Header checksum:" + checksum));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Source Address:" + srcIp));
+            item3->addChild(new QTreeWidgetItem(QStringList()<<"Destination Address:" + desIp));
+        }
     }
-
-
 }
 
+void MainWindow::on_lineEdit_returnPressed()
+{
+    QString text = ui->lineEdit->text();
+    text = text.toUpper();
+    QString target = "#";
+    if(text == "" || text == "UDP" || text == "TCP" || text == "DNS" || text == "ARP"|| text == "ICMP"|| text == "SSL" || text == "TLS"){
+        ui->lineEdit->setStyleSheet("QLineEdit {background-color: rgb(154,255,154);}");
+        target = text;
+    }else{
+        ui->lineEdit->setStyleSheet("QLineEdit {background-color: rgb(250,128,114);}");
+    }
+    int count = 0;
+    int number = ui->tableWidget->rowCount();
+    if(!isStart && target != "#"){
+        if(target!=""){
+            for(int i = 0;i < number;i++){
+                if(ui->tableWidget->item(i,4)->text() != target){
+                    ui->tableWidget->setRowHidden(i,true);
+                }else{
+                    ui->tableWidget->setRowHidden(i,false);
+                    count++;
+                }
+            }
+        }else{
+            int number = ui->tableWidget->rowCount();
+            for(int i = 0;i < number;i++){
+                ui->tableWidget->setRowHidden(i,false);
+                count++;
+            }
+        }
+    }
+
+    double res = 0;
+    if(number != 0)
+        res = (count*100.0)/number;
+    statusBar()->showMessage("Have show (" + QString::number(count) + ") " +QString::number(res,10,2) + "%");
+}
+
+void MainWindow::on_lineEdit_textChanged(const QString &arg1)
+{
+    QString text = arg1;
+    text = text.toLower();
+    if(text == "" || text == "udp" || text == "tcp" || text == "dns" || text == "arp" || text == "icmp" || text == "tls" || text == "ssl"){
+        ui->lineEdit->setStyleSheet("QLineEdit {background-color: rgb(154,255,154);}");
+    }else{
+        ui->lineEdit->setStyleSheet("QLineEdit {background-color: rgb(250,128,114);}");
+    }
+}
+
+void MainWindow::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
+{
+    if((currentRow != previousRow) && previousRow >= 0){
+        on_tableWidget_cellClicked(currentRow,currentColumn);
+    }else return;
+}

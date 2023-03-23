@@ -105,13 +105,14 @@ int multhread::tcpPackageHandle(const u_char *pkt_content, QString &info, int ip
     int delta = (tcp->header_length >> 4) * 4;
     int tcpLoader = ipPackage - delta;
 
-    if(src == 443 || des == 443){
+    if((src == 443 || des == 443) && (tcpLoader > 0)){
         if(src == 443)
             proSend = "(https)";
         else proRecv = "(https)";
         u_char *ssl;
         ssl = (u_char*)(pkt_content + 14 + 20 + delta);
         u_char isTls = (*ssl);
+        ssl++;
         u_short *pointer = (u_short*)ssl;
         u_short version = ntohs(*pointer);
         if(isTls >= 20 && isTls <= 23 && version >= 0x0301 && version <= 0x0304){
@@ -131,14 +132,33 @@ int multhread::tcpPackageHandle(const u_char *pkt_content, QString &info, int ip
                 u_char type = (*ssl);
                 switch(type){
                 case 1:{
-                    info += "Client Hello ";
+                    info += " Client Hello ";
                     break;
                 }
                 case 2:{
-                    info += "Server Hello ";
+                    info += " Server Hello ";
                     break;
                 }
-                    // ...
+                case 4: {
+                    info += " New Session Ticket ";
+                    break;
+                }
+                case 11:{
+                    info += " Certificate ";
+                    break;
+                }
+                case 16:{
+                    info += " Client Key Exchange ";
+                    break;
+                }
+                case 12:{
+                    info += " Server Key Exchange ";
+                    break;
+                }
+                case 14:{
+                    info += " Server Hello Done ";
+                    break;
+                }
                 default:break;
                 }
             }
@@ -151,29 +171,30 @@ int multhread::tcpPackageHandle(const u_char *pkt_content, QString &info, int ip
         }else type = 7;
     }
     if(type == 7)
-        info = "Continuation Data ";
-    info += QString::number(src) + proSend + "->" + QString::number(des) + proRecv;
-    QString flag = "";
-    if(tcp->flags & 0x08) flag += "PSH";
-    if(tcp->flags & 0x10) flag += "ACK";
-    if(tcp->flags & 0x02) flag += "SYN";
-    if(tcp->flags & 0x20) flag += "URG";
-    if(tcp->flags & 0x01) flag += "FIN";
-    if(tcp->flags & 0x04) flag += "RST";
-    if(flag != ""){
-        flag = flag.left(flag.length() - 1);
-        info += "[" + flag + "]";
+        info = " Continuation Data ";
+    else{
+        info += QString::number(src) + proSend + "->" + QString::number(des) + proRecv;
+        QString flag = "";
+        if(tcp->flags & 0x08) flag += "PSH";
+        if(tcp->flags & 0x10) flag += "ACK";
+        if(tcp->flags & 0x02) flag += "SYN";
+        if(tcp->flags & 0x20) flag += "URG";
+        if(tcp->flags & 0x01) flag += "FIN";
+        if(tcp->flags & 0x04) flag += "RST";
+        if(flag != ""){
+            flag = flag.left(flag.length() - 1);
+            info += "[" + flag + "]";
+        }
+
+        u_int sequence = ntohl(tcp->sequence);
+        u_int ack = ntohl(tcp->ack);
+        u_short window = ntohs(tcp->window_size);
+
+        info += " Seq=" + QString::number(sequence) + " Ack=" + QString::number(ack) + " win=" + QString::number(window) + " len=" + QString::number(tcpLoader);
+
     }
-
-    u_int sequence = ntohl(tcp->sequence);
-    u_int ack = ntohl(tcp->ack);
-    u_short window = ntohs(tcp->window_size);
-
-    info += "Seq=" + QString::number(sequence) + "Ack=" + QString::number(ack) + "win=" + QString::number(window) + "len=" + QString::number(tcpLoader);
     return type;
-
 }
-
 
 int multhread::udpPackageHandle(const u_char *pkt_content, QString &info){
     UDP_HEADER *udp;
@@ -193,18 +214,19 @@ int multhread::udpPackageHandle(const u_char *pkt_content, QString &info){
     }
 }
 
-
 QString multhread::arpPackageHandle(const u_char *pkt_content){
     ARP_HEADER *arp;
     arp = (ARP_HEADER*)(pkt_content + 14);
 
     u_short op = ntohs(arp->op_code);
     QString res = "";
+
     u_char *des_addr = arp->des_ip_addr;
     QString desIp = QString::number(*des_addr) + "."
             + QString::number(*(des_addr + 1)) + "."
             + QString::number(*(des_addr + 2)) + "."
             + QString::number(*(des_addr + 3));
+
     u_char *src_ip = arp->src_ip_addr;
     QString srcIp = QString::number(*src_ip) + "."
             + QString::number(*(src_ip + 1)) + "."
@@ -220,10 +242,10 @@ QString multhread::arpPackageHandle(const u_char *pkt_content){
             + ByteToString((src_eth_addr + 5), 1);
 
     if(op == 1){
-        res = "who has " + desIp + "? Tell " + srcIp;
+        res = "Who has " + desIp + "? Tell " + srcIp;
     }
     else if(op == 2){
-        res = srcIp + "is at " + srcEth;
+        res = srcIp + " is at " + srcEth;
     }
     return res;
 
@@ -287,7 +309,48 @@ QString multhread::icmpPackageHandle(const u_char *pkt_content){
             res = "Echo response(ping)";
         break;
     }
-        // ......
+    case 3:{
+        switch (code) {
+        case 0:{
+            res = "Network unreachable";
+            break;
+        }
+        case 1:{
+            res = "Host unreachable";
+            break;
+        }
+        case 2:{
+            res = "Protocol unreachable";
+            break;
+        }
+        case 3:{
+            res = "Port unreachable";
+            break;
+        }
+        case 4:{
+            res = "Fragmentation is required, but DF is set";
+            break;
+        }
+        case 5:{
+            res = "Source route selection failed";
+            break;
+        }
+        case 6:{
+            res = "Unknown target network";
+            break;
+        }
+        default:break;
+        }
+        break;
+    }
+    case 4:{
+        res = "Source station suppression [congestion control]";
+        break;
+    }
+    case 5:{
+        res = "Relocation";
+        break;
+    }
     case 8:{
         if(!code)
             res = "Echo request(ping)";

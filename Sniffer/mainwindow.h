@@ -24,8 +24,10 @@ public:
 
 private slots:
     void on_comboBox_currentIndexChanged(int index);
-
     void on_tableWidget_cellClicked(int row, int column);
+    void on_lineEdit_returnPressed();
+    void on_lineEdit_textChanged(const QString &arg1);
+    void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
 public slots:
     void HandleMessage(DataPackage data);
@@ -39,5 +41,6 @@ private:
     int countNumber;
     char errbuf[PCAP_ERRBUF_SIZE];
     int numberRow;
+    bool isStart;
 };
 #endif // MAINWINDOW_H
